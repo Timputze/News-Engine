@@ -51,41 +51,37 @@ export default function Home() {
   return (
     <div className="min-h-screen relative overflow-hidden text-black">
 
-      {/* 🔥 ANIMATED BACKGROUND */}
+      {/* ✅ MULTI-LAYER BACKGROUND */}
+      <div className="absolute inset-0 bg-[#0f172a]" />
+
       <motion.div
-        className="absolute inset-0"
+        className="absolute inset-0 opacity-60"
         animate={{
           background: [
-            "linear-gradient(120deg, #dbeafe, #f0f9ff, #ede9fe)",
-            "linear-gradient(120deg, #e0f2fe, #eef2ff, #f5f3ff)",
-            "linear-gradient(120deg, #dbeafe, #f0f9ff, #ede9fe)"
+            "radial-gradient(circle at 20% 20%, #3b82f6, transparent 40%)",
+            "radial-gradient(circle at 80% 30%, #a855f7, transparent 40%)",
+            "radial-gradient(circle at 50% 80%, #3b82f6, transparent 40%)"
           ]
         }}
-        transition={{ duration: 12, repeat: Infinity }}
+        transition={{ duration: 10, repeat: Infinity }}
       />
-
-      {/* glow blobs */}
-      <div className="absolute top-[-200px] left-[-200px] w-[600px] h-[600px] bg-blue-400 opacity-40 blur-[150px] rounded-full" />
-      <div className="absolute bottom-[-200px] right-[-200px] w-[600px] h-[600px] bg-purple-400 opacity-40 blur-[150px] rounded-full" />
 
       <div className="relative z-10">
 
-        {/* NAVBAR */}
-        <div className="h-16 flex items-center justify-between px-10 border-b bg-white/30 backdrop-blur-xl">
-          <h1 className="font-semibold">Digital Identity News Engine</h1>
-          <div className="flex gap-6 text-sm text-gray-700">
-            <span>Dashboard</span>
-            <span>Insights</span>
-          </div>
+        {/* NAV */}
+        <div className="h-16 flex items-center justify-between px-10 border-b border-white/10 bg-white/10 backdrop-blur-xl">
+          <h1 className="text-white font-semibold">
+            Digital Identity News Engine
+          </h1>
         </div>
 
         <div className="flex">
 
           {/* SIDEBAR */}
-          <div className="w-64 p-6 bg-white/20 backdrop-blur-xl border-r space-y-6">
+          <div className="w-64 p-6 bg-white/10 backdrop-blur-xl border-r border-white/10 space-y-6 text-white">
             <input
+              className="w-full px-3 py-2 rounded bg-white/20"
               placeholder="Search..."
-              className="w-full px-3 py-2 rounded bg-white/70 border"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -100,106 +96,50 @@ export default function Home() {
           </div>
 
           {/* MAIN */}
-          <div className="flex-1 p-12 space-y-12">
+          <div className="flex-1 p-12 space-y-10 text-white">
 
-            {/* HERO */}
             <h1 className="text-5xl font-semibold">
               Digital Identity Intelligence
-              <span className="block text-blue-600">
-                News Dashboard
-              </span>
             </h1>
 
-            {/* TOP ARTICLES */}
-            <div className="grid grid-cols-3 gap-6">
-              {top3.map((a, i) => (
-                <motion.div
-                  key={i}
-                  whileHover={{ y: -8, scale: 1.03 }}
-                  className="
-                    bg-white/20
-                    backdrop-blur-2xl
-                    border border-white/40
-                    rounded-xl
-                    p-5
-                    shadow-xl
-                  "
-                >
-                  <h3 className="text-sm font-semibold">
-                    {a.title}
-                  </h3>
-
-                  <p className="text-xs mt-2 text-gray-600">
-                    {a.source}
-                  </p>
-
-                  <p className="text-xs mt-2 text-blue-600">
-                    Score: {a.score}
-                  </p>
-
-                  <button
-                    className="mt-3 text-sm underline"
-                    onClick={() => window.open(a.link)}
-                  >
-                    Open →
-                  </button>
-                </motion.div>
-              ))}
-            </div>
-
-            {/* CHART (SMALLER) */}
-            <div className="bg-white/20 backdrop-blur-2xl p-6 rounded-xl">
-              <div className="h-40">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={chartData}>
-                    <XAxis dataKey="topic" />
-                    <Tooltip />
-                    <Bar dataKey="count" fill="#4f46e5" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
-            {/* ALL ARTICLES */}
+            {/* CARDS */}
             <div className="grid grid-cols-3 gap-6">
               {filtered.map((a, i) => (
                 <motion.div
                   key={i}
-                  whileHover={{ y: -6, scale: 1.02 }}
+                  whileHover={{
+                    y: -8,
+                    scale: 1.03,
+                    boxShadow: "0 20px 60px rgba(0,0,0,0.4)"
+                  }}
                   className="
-                    bg-white/20
+                    relative
+                    bg-white/10
                     backdrop-blur-2xl
-                    border border-white/40
+                    border border-white/20
                     rounded-xl
                     p-5
-                    shadow-xl
                   "
                 >
-                  <h3 className="text-sm font-semibold">
-                    {a.title}
-                  </h3>
+                  {/* glass highlight */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-xl pointer-events-none" />
 
-                  <p className="text-xs text-gray-600 mt-2">
-                    {a.source}
-                  </p>
+                  <h3>{a.title}</h3>
 
-                  <p className="text-xs text-blue-600 mt-2">
+                  <p className="text-xs mt-2 text-gray-300">
                     Score: {a.score}
                   </p>
 
-                  <div className="flex flex-wrap gap-2 mt-2">
+                  <div className="flex gap-2 mt-2 flex-wrap">
                     {a.keywords?.split(",").slice(0, 3).map((k: string, idx: number) => (
-                      <span
-                        key={idx}
-                        className="text-xs bg-blue-100 px-2 py-1 rounded"
-                      >
+                      <span key={idx} className="text-xs bg-white/20 px-2 py-1 rounded">
                         {k.trim()}
                       </span>
                     ))}
                   </div>
 
                   <button
-                    className="mt-3 text-sm underline"
+                    className="mt-3 underline text-sm"
                     onClick={() => window.open(a.link)}
                   >
                     Open →
@@ -208,9 +148,9 @@ export default function Home() {
               ))}
             </div>
 
-          </div>          </div> {/* MAIN */}
-        </div>   {/* FLEX */}
-      </div>     {/* CONTENT LAYER */}
-    </div>       {/* ROOT CONTAINER */}
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }
