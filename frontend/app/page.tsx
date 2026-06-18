@@ -20,6 +20,10 @@ export default function Home() {
   const mouseX = useMotionValue(0)
   const mouseY = useMotionValue(0)
 
+  // ✅ SAFE 3D tilt (NO window usage)
+  const rotateX = useTransform(mouseY, [0, 1000], [10, -10])
+  const rotateY = useTransform(mouseX, [0, 1000], [-10, 10])
+
   useEffect(() => {
     const move = (e: MouseEvent) => {
       mouseX.set(e.clientX)
@@ -27,7 +31,7 @@ export default function Home() {
     }
     window.addEventListener("mousemove", move)
     return () => window.removeEventListener("mousemove", move)
-  }, [])
+  }, [mouseX, mouseY])
 
   useEffect(() => {
     fetch(API_URL)
@@ -68,7 +72,7 @@ export default function Home() {
   return (
     <div className="min-h-screen relative overflow-hidden text-black">
 
-      {/* ✅ BACKGROUND */}
+      {/* ✅ ANIMATED BACKGROUND */}
       <motion.div
         className="absolute inset-0"
         animate={{
@@ -95,7 +99,7 @@ export default function Home() {
       <div className="relative z-10">
 
         {/* NAV */}
-        <div className="h-16 flex items-center justify-between px-10 border-b bg-white/30 backdrop-blur-xl">
+        <div className="h-16 flex items-center px-10 border-b bg-white/30 backdrop-blur-xl">
           <h1 className="font-semibold">Digital Identity News Engine</h1>
         </div>
 
@@ -128,7 +132,7 @@ export default function Home() {
               <span className="block text-blue-600">News Dashboard</span>
             </h1>
 
-            {/* ✅ KPI ROW */}
+            {/* ✅ KPI */}
             <div className="grid grid-cols-3 gap-6">
               {[
                 { label: "Articles", value: filtered.length },
@@ -151,7 +155,6 @@ export default function Home() {
             {/* ✅ TOP 3 */}
             <div>
               <h2 className="text-lg font-semibold mb-4">Top Articles</h2>
-
               <div className="grid grid-cols-3 gap-6">
                 {top3.map((a, i) => (
                   <motion.div
@@ -159,12 +162,9 @@ export default function Home() {
                     whileHover={{ y: -8, scale: 1.03 }}
                     className="bg-white/20 backdrop-blur-2xl border border-white/40 rounded-xl p-6 shadow-xl"
                   >
-                    <h3 className="font-semibold">{a.title}</h3>
+                    <h3>{a.title}</h3>
                     <p className="text-xs mt-2">{a.source}</p>
-                    <p className="text-xs mt-2 text-blue-600">
-                      Score: {a.score}
-                    </p>
-
+                    <p className="text-xs mt-2 text-blue-600">Score: {a.score}</p>
                     <button
                       className="mt-3 underline text-sm"
                       onClick={() => window.open(a.link)}
@@ -176,7 +176,7 @@ export default function Home() {
               </div>
             </div>
 
-            {/* CHART */}
+            {/* ✅ CHART */}
             <div className="bg-white/20 backdrop-blur-2xl p-6 rounded-xl">
               <div className="h-40">
                 <ResponsiveContainer width="100%" height="100%">
@@ -191,44 +191,40 @@ export default function Home() {
 
             {/* ✅ ALL ARTICLES */}
             <div className="grid grid-cols-3 gap-6">
-              {filtered.map((a, i) => {
+              {filtered.map((a, i) => (
+                <motion.div
+                  key={i}
+                  style={{ rotateX, rotateY }}
+                  whileHover={{ scale: 1.05 }}
+                  className="bg-white/20 backdrop-blur-2xl border border-white/40 rounded-xl p-5 shadow-xl"
+                >
+                  <h3 className="text-sm font-semibold">{a.title}</h3>
 
-                const rotateX = useTransform(mouseY, [0, 1000], [10, -10])
-                const rotateY = useTransform(mouseX, [0, 1000], [-10, 10])
+                  <p className="text-xs mt-2">{a.source}</p>
 
+                  <p className="text-xs mt-2 text-blue-600">
+                    Score: {a.score}
+                  </p>
 
-                return (
-                  <motion.div
-                    key={i}
-                    style={{ rotateX, rotateY }}
-                    whileHover={{ scale: 1.05 }}
-                    className="bg-white/20 backdrop-blur-2xl border border-white/40 rounded-xl p-5 shadow-xl"
-                  >
-                    <h3 className="text-sm font-semibold">{a.title}</h3>
-
-                    <p className="text-xs mt-2">{a.source}</p>
-
-                    <p className="text-xs mt-2 text-blue-600">
-                      Score: {a.score}
-                    </p>
-
-                    <div className="flex gap-2 mt-2 flex-wrap">
-                      {(a.keywords || "").split(",").slice(0, 3).map((k: string, idx: number) => (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {(a.keywords || "")
+                      .split(",")
+                      .slice(0, 3)
+                      .map((k: string, idx: number) => (
                         <span key={idx} className="text-xs bg-blue-100 px-2 py-1 rounded">
                           {k.trim()}
                         </span>
                       ))}
-                    </div>
+                  </div>
 
-                    <button
-                      className="mt-3 underline text-sm"
-                      onClick={() => window.open(a.link)}
-                    >
-                      Open →
-                    </button>
-                  </motion.div>
-                )
-              })}
+                  <button
+                    className="mt-3 underline text-sm"
+                    onClick={() => window.open(a.link)}
+                  >
+                    Open →
+                  </button>
+                </motion.div>
+              ))}
             </div>
 
           </div> {/* MAIN */}
