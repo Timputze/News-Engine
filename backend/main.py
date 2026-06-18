@@ -38,6 +38,9 @@ def assign_topic(title):
 
     return "Other"
 
+@app.get("/")
+def root():
+    return {"status": "API is running"}
 
 @app.get("/articles")
 def get_articles():
