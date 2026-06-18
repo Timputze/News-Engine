@@ -24,7 +24,7 @@ export default function Home() {
       .catch(() => setArticles([]))
   }, [])
 
-  if (!articles) return <div className="p-10 text-gray-600">Loading…</div>
+  if (!articles) return <div className="p-10">Loading…</div>
 
   const scores = articles.map(a => a.score || 0)
   const maxScore = scores.length ? Math.max(...scores) : 1
@@ -51,23 +51,30 @@ export default function Home() {
   return (
     <div className="min-h-screen relative overflow-hidden text-black">
 
-      {/* ✅ STRONG BACKGROUND */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#dbeafe] via-[#f8fafc] to-[#ede9fe]" />
+      {/* 🔥 ANIMATED BACKGROUND */}
+      <motion.div
+        className="absolute inset-0"
+        animate={{
+          background: [
+            "linear-gradient(120deg, #dbeafe, #f0f9ff, #ede9fe)",
+            "linear-gradient(120deg, #e0f2fe, #eef2ff, #f5f3ff)",
+            "linear-gradient(120deg, #dbeafe, #f0f9ff, #ede9fe)"
+          ]
+        }}
+        transition={{ duration: 12, repeat: Infinity }}
+      />
 
-      {/* ✅ VISIBLE COLOR BLOBS */}
-      <div className="absolute top-[-150px] left-[-150px] w-[500px] h-[500px] bg-blue-500 opacity-40 blur-[120px] rounded-full" />
-      <div className="absolute bottom-[-150px] right-[-150px] w-[500px] h-[500px] bg-purple-500 opacity-40 blur-[120px] rounded-full" />
+      {/* glow blobs */}
+      <div className="absolute top-[-200px] left-[-200px] w-[600px] h-[600px] bg-blue-400 opacity-40 blur-[150px] rounded-full" />
+      <div className="absolute bottom-[-200px] right-[-200px] w-[600px] h-[600px] bg-purple-400 opacity-40 blur-[150px] rounded-full" />
 
       <div className="relative z-10">
 
         {/* NAVBAR */}
-        <div className="h-16 flex items-center justify-between px-10 border-b bg-white/70 backdrop-blur-lg">
-          <h1 className="font-semibold text-lg">
-            Digital Identity News Engine
-          </h1>
-
-          <div className="flex gap-8 text-sm text-gray-700">
-            <span className="font-medium">Dashboard</span>
+        <div className="h-16 flex items-center justify-between px-10 border-b bg-white/30 backdrop-blur-xl">
+          <h1 className="font-semibold">Digital Identity News Engine</h1>
+          <div className="flex gap-6 text-sm text-gray-700">
+            <span>Dashboard</span>
             <span>Insights</span>
           </div>
         </div>
@@ -75,11 +82,10 @@ export default function Home() {
         <div className="flex">
 
           {/* SIDEBAR */}
-          <div className="w-64 p-6 border-r bg-white/50 backdrop-blur-lg space-y-8">
-
+          <div className="w-64 p-6 bg-white/20 backdrop-blur-xl border-r space-y-6">
             <input
-              className="w-full px-3 py-2 rounded-md bg-white border text-sm"
-              placeholder="Search articles..."
+              placeholder="Search..."
+              className="w-full px-3 py-2 rounded bg-white/70 border"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -91,12 +97,12 @@ export default function Home() {
               value={minScore}
               onChange={(e) => setMinScore(Number(e.target.value))}
             />
-
           </div>
 
           {/* MAIN */}
           <div className="flex-1 p-12 space-y-12">
 
+            {/* HERO */}
             <h1 className="text-5xl font-semibold">
               Digital Identity Intelligence
               <span className="block text-blue-600">
@@ -107,33 +113,42 @@ export default function Home() {
             {/* TOP ARTICLES */}
             <div className="grid grid-cols-3 gap-6">
               {top3.map((a, i) => (
-                <div
+                <motion.div
                   key={i}
+                  whileHover={{ y: -8, scale: 1.03 }}
                   className="
                     bg-white/20
-                    backdrop-blur-xl
-                    border border-white/60
+                    backdrop-blur-2xl
+                    border border-white/40
                     rounded-xl
                     p-5
-                    shadow-[0_20px_80px_rgba(0,0,0,0.2)]
+                    shadow-xl
                   "
                 >
                   <h3 className="text-sm font-semibold">
                     {a.title}
                   </h3>
-                </div>
+
+                  <p className="text-xs mt-2 text-gray-600">
+                    {a.source}
+                  </p>
+
+                  <p className="text-xs mt-2 text-blue-600">
+                    Score: {a.score}
+                  </p>
+
+                  <button
+                    className="mt-3 text-sm underline"
+                    onClick={() => window.open(a.link)}
+                  >
+                    Open →
+                  </button>
+                </motion.div>
               ))}
             </div>
 
-            {/* CHART */}
-            <div className="
-              bg-white/20
-              backdrop-blur-xl
-              border border-white/60
-              rounded-xl
-              p-6
-              shadow-[0_20px_80px_rgba(0,0,0,0.2)]
-            ">
+            {/* CHART (SMALLER) */}
+            <div className="bg-white/20 backdrop-blur-2xl p-6 rounded-xl">
               <div className="h-40">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={chartData}>
@@ -145,30 +160,55 @@ export default function Home() {
               </div>
             </div>
 
-            {/* ✅ ALL ARTICLES */}
+            {/* ALL ARTICLES */}
             <div className="grid grid-cols-3 gap-6">
               {filtered.map((a, i) => (
-                <div
+                <motion.div
                   key={i}
+                  whileHover={{ y: -6, scale: 1.02 }}
                   className="
                     bg-white/20
-                    backdrop-blur-xl
-                    border border-white/60
+                    backdrop-blur-2xl
+                    border border-white/40
                     rounded-xl
                     p-5
-                    shadow-[0_20px_80px_rgba(0,0,0,0.2)]
+                    shadow-xl
                   "
                 >
                   <h3 className="text-sm font-semibold">
                     {a.title}
                   </h3>
-                </div>
+
+                  <p className="text-xs text-gray-600 mt-2">
+                    {a.source}
+                  </p>
+
+                  <p className="text-xs text-blue-600 mt-2">
+                    Score: {a.score}
+                  </p>
+
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {a.keywords?.split(",").slice(0, 3).map((k: string, idx: number) => (
+                      <span
+                        key={idx}
+                        className="text-xs bg-blue-100 px-2 py-1 rounded"
+                      >
+                        {k.trim()}
+                      </span>
+                    ))}
+                  </div>
+
+                  <button
+                    className="mt-3 text-sm underline"
+                    onClick={() => window.open(a.link)}
+                  >
+                    Open →
+                  </button>
+                </motion.div>
               ))}
             </div>
 
           </div>
         </div>
       </div>
-    </div>
-  )
-}
+    
