@@ -128,11 +128,11 @@ export default function Home() {
 
             {/* HERO */}
             <h1 className="text-5xl font-semibold">
-              Digital Identity Intelligence
+              Digital Identity
               <span className="block text-blue-600">News Dashboard</span>
             </h1>
 
-            {/* ✅ KPI */}
+            {/* KPI */}
             <div className="grid grid-cols-3 gap-6">
               {[
                 { label: "Articles", value: filtered.length },
@@ -152,7 +152,7 @@ export default function Home() {
               ))}
             </div>
 
-            {/* ✅ TOP 3 */}
+            {/* TOP 3 */}
             <div>
               <h2 className="text-lg font-semibold mb-4">Top Articles</h2>
               <div className="grid grid-cols-3 gap-6">
@@ -176,7 +176,7 @@ export default function Home() {
               </div>
             </div>
 
-            {/* ✅ CHART */}
+            {/* CHART */}
             <div className="bg-white/20 backdrop-blur-2xl p-6 rounded-xl">
               <div className="h-40">
                 <ResponsiveContainer width="100%" height="100%">
@@ -189,7 +189,7 @@ export default function Home() {
               </div>
             </div>
 
-            {/* ✅ ALL ARTICLES */}
+            {/* ALL ARTICLES */}
             <div className="grid grid-cols-3 gap-6">
               {filtered.map((a, i) => (
                 <motion.div
