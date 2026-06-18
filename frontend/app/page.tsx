@@ -213,7 +213,7 @@ export default function Home() {
                     </p>
 
                     <div className="flex gap-2 mt-2 flex-wrap">
-                      {a.keywords?.split(",").slice(0, 3).map((k: string, idx: number) => (
+                      {(a.keywords || "").split(",").slice(0, 3).map((k: string, idx: number) => (
                         <span key={idx} className="text-xs bg-blue-100 px-2 py-1 rounded">
                           {k.trim()}
                         </span>
