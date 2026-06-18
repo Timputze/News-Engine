@@ -193,8 +193,9 @@ export default function Home() {
             <div className="grid grid-cols-3 gap-6">
               {filtered.map((a, i) => {
 
-                const rotateX = useTransform(mouseY, [0, window.innerHeight], [10, -10])
-                const rotateY = useTransform(mouseX, [0, window.innerWidth], [-10, 10])
+                const rotateX = useTransform(mouseY, [0, 1000], [10, -10])
+                const rotateY = useTransform(mouseX, [0, 1000], [-10, 10])
+
 
                 return (
                   <motion.div
