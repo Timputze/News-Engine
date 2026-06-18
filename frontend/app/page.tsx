@@ -208,7 +208,9 @@ export default function Home() {
               ))}
             </div>
 
-          </div>
-        </div>
-      </div>
-    
+          </div>          </div> {/* MAIN */}
+        </div>   {/* FLEX */}
+      </div>     {/* CONTENT LAYER */}
+    </div>       {/* ROOT CONTAINER */}
+  )
+}
