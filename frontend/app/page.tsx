@@ -16,7 +16,7 @@ import {
 const API_URL = "https://news-engine-backend.onrender.com/articles"
 
 export default function Home() {
-  const [articles, setArticles] = useState<any[]>([])
+  const [articles, setArticles] = useState<any[] | null>(null)
   const [search, setSearch] = useState("")
   const [minScore, setMinScore] = useState(0)
 
@@ -27,7 +27,29 @@ export default function Home() {
       .catch(() => setArticles([]))
   }, [])
 
-  // ✅ SAFE maxScore
+  // ✅ LOADING STATE (premium)
+  if (articles === null) {
+    return (
+      <div className="p-10 space-y-6">
+        <div className="h-10 w-64 bg-gray-200 rounded animate-pulse" />
+        <div className="grid grid-cols-3 gap-6">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="h-40 bg-gray-200 rounded animate-pulse" />
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  // ✅ EMPTY STATE
+  if (articles.length === 0) {
+    return (
+      <div className="p-10 text-gray-500">
+        No articles found.
+      </div>
+    )
+  }
+
   const scores = articles.map(a => a.score || 0)
   const maxScore = scores.length > 0 ? Math.max(...scores) : 1
 
@@ -45,10 +67,9 @@ export default function Home() {
     return "bg-red-400"
   }
 
-  // ✅ SAFE chart
   const topicCounts: Record<string, number> = {}
   filtered.forEach(a => {
-    const topic = a?.topic || "Other"
+    const topic = a.topic || "Other"
     topicCounts[topic] = (topicCounts[topic] || 0) + 1
   })
 
@@ -58,41 +79,48 @@ export default function Home() {
   }))
 
   return (
-    <div className="relative min-h-screen text-black">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="p-10 space-y-10"
+    >
 
-      {/* fallback loading */}
-      {articles.length === 0 && (
-        <div className="p-10 text-gray-500">
-          Loading data...
-        </div>
-      )}
+      {/* HERO */}
+      <div>
+        <h1 className="text-4xl font-semibold">
+          Identity Intelligence Engine
+        </h1>
+        <p className="text-gray-500 mt-2">
+          Real-time monitoring of digital identity trends
+        </p>
+      </div>
 
-      {articles.length > 0 && (
-        <div className="p-10 space-y-10">
+      {/* FILTER */}
+      <div>
+        <input
+          placeholder="Search..."
+          className="border px-3 py-2 rounded mr-4"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
 
-          <h1 className="text-4xl font-semibold">
-            Identity Intelligence Engine
-          </h1>
+        <input
+          type="range"
+          min={0}
+          max={maxScore}
+          value={minScore}
+          onChange={(e) => setMinScore(Number(e.target.value))}
+        />
+      </div>
 
-          {/* slider */}
-          <div>
-            <p className="text-sm">
-              Score: {minScore} – {maxScore}
-            </p>
+      {/* TOP 3 */}
+      <div>
+        <h2 className="text-xl font-semibold mb-4">Top Signals</h2>
 
-            <input
-              type="range"
-              min={0}
-              max={maxScore}
-              value={minScore}
-              onChange={(e) => setMinScore(Number(e.target.value))}
-            />
-          </div>
-
-          {/* top 3 */}
-          <div className="grid grid-cols-3 gap-4">
-            {top3.map((a, i) => (
-              <Card key={i}>
+        <div className="grid grid-cols-3 gap-4">
+          {top3.map((a, i) => (
+            <motion.div key={i} whileHover={{ scale: 1.03 }}>
+              <Card>
                 <CardContent>
                   <h3>{a.title}</h3>
                   <Badge className={getScoreColor(a.score)}>
@@ -100,25 +128,47 @@ export default function Home() {
                   </Badge>
                 </CardContent>
               </Card>
-            ))}
-          </div>
-
-          {/* chart */}
-          <Card>
-            <CardContent className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData}>
-                  <XAxis dataKey="topic" />
-                  <Tooltip />
-                  <Bar dataKey="count" fill="#111" />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
+            </motion.div>
+          ))}
         </div>
-      )}
+      </div>
 
-    </div>
+      {/* CHART */}
+      <Card>
+        <CardContent className="h-64">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={chartData}>
+              <XAxis dataKey="topic" />
+              <Tooltip />
+              <Bar dataKey="count" fill="#111" />
+            </BarChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+
+      {/* GRID */}
+      <div className="grid grid-cols-3 gap-6">
+        {filtered.map((a, i) => (
+          <motion.div key={i} whileHover={{ y: -5 }}>
+            <Card>
+              <CardContent>
+                <h2>{a.title}</h2>
+                <Badge className={getScoreColor(a.score)}>
+                  {a.score}
+                </Badge>
+
+                <Button
+                  className="mt-3 w-full"
+                  onClick={() => window.open(a.link)}
+                >
+                  Open
+                </Button>
+              </CardContent>
+            </Card>
+          </motion.div>
+        ))}
+      </div>
+
+    </motion.div>
   )
 }
