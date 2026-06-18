@@ -13,7 +13,7 @@ import {
   ResponsiveContainer
 } from "recharts"
 
-const API_URL = "https://news-engine-backend.onrender.com"
+const API_URL = "https://news-engine-backend.onrender.com/articles"
 
 export default function Home() {
   const [articles, setArticles] = useState<any[]>([])
