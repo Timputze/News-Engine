@@ -357,7 +357,7 @@ export default function Home() {
       : {
           initial: { opacity: 0, y: 12 },
           animate: { opacity: 1, y: 0 },
-          transition: { duration: 0.45, delay: i * 0.06, ease: "easeOut" },
+          transition: { duration: 0.45, delay: i * 0.06, ease: "easeOut" as const},
         }
 
   /* ---- Render ----------------------------------------------------- */
