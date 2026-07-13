@@ -10,6 +10,10 @@ import {
   ResponsiveContainer
 } from "recharts"
 
+import { Card, CardContent, CardTitle, CardDescription } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+
 const API_URL = "https://news-engine-backend.onrender.com/articles"
 
 export default function Home() {
@@ -20,7 +24,6 @@ export default function Home() {
   const mouseX = useMotionValue(0)
   const mouseY = useMotionValue(0)
 
-  // ✅ SAFE 3D tilt (NO window usage)
   const rotateX = useTransform(mouseY, [0, 1000], [10, -10])
   const rotateY = useTransform(mouseX, [0, 1000], [-10, 10])
 
@@ -70,9 +73,9 @@ export default function Home() {
   }))
 
   return (
-    <div className="min-h-screen relative overflow-hidden text-black">
+    <div className="min-h-screen relative overflow-hidden">
 
-      {/* ✅ ANIMATED BACKGROUND */}
+      {/* ✅ BACKGROUND */}
       <motion.div
         className="absolute inset-0"
         animate={{
@@ -99,38 +102,59 @@ export default function Home() {
       <div className="relative z-10">
 
         {/* NAV */}
-        <div className="h-16 flex items-center px-10 border-b bg-white/30 backdrop-blur-xl">
-          <h1 className="font-semibold">Digital Identity News Engine</h1>
+        <div className="h-16 flex items-center px-10 border-b bg-white/40 backdrop-blur-xl">
+          <h1 className="font-semibold text-lg">
+            Digital Identity News Engine
+          </h1>
         </div>
 
         <div className="flex">
 
-          {/* SIDEBAR */}
-          <div className="w-64 p-6 bg-white/20 backdrop-blur-xl border-r space-y-6">
-            <input
-              placeholder="Search..."
-              className="w-full px-3 py-2 rounded bg-white/70 border"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+          {/* ✅ SIDEBAR */}
+          <div className="w-72 p-6 bg-white/40 backdrop-blur-xl border-r space-y-6">
 
-            <input
-              type="range"
-              min={0}
-              max={maxScore}
-              value={minScore}
-              onChange={(e) => setMinScore(Number(e.target.value))}
-            />
+            <div>
+              <p className="text-sm font-medium mb-1">Search</p>
+              <input
+                placeholder="Search articles..."
+                className="w-full px-3 py-2 rounded border bg-white"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <p className="text-sm font-medium mb-1">
+                Relevance Filter
+              </p>
+
+              <input
+                type="range"
+                min={0}
+                max={maxScore}
+                value={minScore}
+                onChange={(e) => setMinScore(Number(e.target.value))}
+              />
+
+              <p className="text-xs text-gray-600 mt-1">
+                Only show articles with score ≥ {minScore}
+              </p>
+            </div>
+
           </div>
 
           {/* MAIN */}
           <div className="flex-1 p-12 space-y-12">
 
             {/* HERO */}
-            <h1 className="text-5xl font-semibold">
-              Digital Identity
-              <span className="block text-blue-600">News Dashboard</span>
-            </h1>
+            <div>
+              <h1 className="text-5xl font-bold tracking-tight">
+                Digital Identity
+              </h1>
+              <h2 className="text-5xl text-blue-600 font-bold">
+                News Dashboard
+              </h2>
+            </div>
 
             {/* KPI */}
             <div className="grid grid-cols-3 gap-6">
@@ -139,55 +163,64 @@ export default function Home() {
                 { label: "Avg Score", value: avgScore },
                 { label: "Topics", value: Object.keys(topicCounts).length }
               ].map((kpi, i) => (
-                <motion.div
-                  key={i}
-                  whileHover={{ y: -5, scale: 1.02 }}
-                  className="bg-white/20 backdrop-blur-2xl border border-white/40 rounded-xl p-6 shadow-xl"
-                >
-                  <p className="text-xs text-gray-700">{kpi.label}</p>
-                  <p className="text-2xl font-semibold mt-2 text-blue-600">
-                    {kpi.value}
-                  </p>
-                </motion.div>
+                <Card key={i}>
+                  <CardContent>
+                    <CardDescription>{kpi.label}</CardDescription>
+                    <CardTitle className="mt-2 text-xl text-blue-600">
+                      {kpi.value}
+                    </CardTitle>
+                  </CardContent>
+                </Card>
               ))}
             </div>
 
-            {/* TOP 3 */}
+            {/* TOP ARTICLES */}
             <div>
-              <h2 className="text-lg font-semibold mb-4">Top Articles</h2>
+              <h2 className="text-lg font-semibold mb-4">
+                Top Articles
+              </h2>
+
               <div className="grid grid-cols-3 gap-6">
                 {top3.map((a, i) => (
-                  <motion.div
-                    key={i}
-                    whileHover={{ y: -8, scale: 1.03 }}
-                    className="bg-white/20 backdrop-blur-2xl border border-white/40 rounded-xl p-6 shadow-xl"
-                  >
-                    <h3>{a.title}</h3>
-                    <p className="text-xs mt-2">{a.source}</p>
-                    <p className="text-xs mt-2 text-blue-600">Score: {a.score}</p>
-                    <button
-                      className="mt-3 underline text-sm"
-                      onClick={() => window.open(a.link)}
-                    >
-                      Open →
-                    </button>
-                  </motion.div>
+                  <Card key={i}>
+                    <CardContent>
+                      <CardTitle>{a.title}</CardTitle>
+
+                      <CardDescription className="mt-2">
+                        {a.source}
+                      </CardDescription>
+
+                      <Badge className="mt-2">
+                        Score: {a.score}
+                      </Badge>
+
+                      <Button
+                        variant="link"
+                        className="mt-2"
+                        onClick={() => window.open(a.link)}
+                      >
+                        Open →
+                      </Button>
+                    </CardContent>
+                  </Card>
                 ))}
               </div>
             </div>
 
             {/* CHART */}
-            <div className="bg-white/20 backdrop-blur-2xl p-6 rounded-xl">
-              <div className="h-40">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={chartData}>
-                    <XAxis dataKey="topic" />
-                    <Tooltip />
-                    <Bar dataKey="count" fill="#4f46e5" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
+            <Card>
+              <CardContent>
+                <div className="h-40">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={chartData}>
+                      <XAxis dataKey="topic" />
+                      <Tooltip />
+                      <Bar dataKey="count" fill="#4f46e5" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
 
             {/* ALL ARTICLES */}
             <div className="grid grid-cols-3 gap-6">
@@ -195,41 +228,49 @@ export default function Home() {
                 <motion.div
                   key={i}
                   style={{ rotateX, rotateY }}
-                  whileHover={{ scale: 1.05 }}
-                  className="bg-white/20 backdrop-blur-2xl border border-white/40 rounded-xl p-5 shadow-xl"
+                  whileHover={{ scale: 1.03 }}
                 >
-                  <h3 className="text-sm font-semibold">{a.title}</h3>
+                  <Card>
+                    <CardContent>
 
-                  <p className="text-xs mt-2">{a.source}</p>
+                      <CardTitle>{a.title}</CardTitle>
 
-                  <p className="text-xs mt-2 text-blue-600">
-                    Score: {a.score}
-                  </p>
+                      <CardDescription className="mt-2">
+                        {a.source}
+                      </CardDescription>
 
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {(a.keywords || "")
-                      .split(",")
-                      .slice(0, 3)
-                      .map((k: string, idx: number) => (
-                        <span key={idx} className="text-xs bg-blue-100 px-2 py-1 rounded">
-                          {k.trim()}
-                        </span>
-                      ))}
-                  </div>
+                      <Badge className="mt-2">
+                        Score: {a.score}
+                      </Badge>
 
-                  <button
-                    className="mt-3 underline text-sm"
-                    onClick={() => window.open(a.link)}
-                  >
-                    Open →
-                  </button>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {(a.keywords || "")
+                          .split(",")
+                          .slice(0, 3)
+                          .map((k: string, idx: number) => (
+                            <Badge key={idx} variant="secondary">
+                              {k.trim()}
+                            </Badge>
+                          ))}
+                      </div>
+
+                      <Button
+                        variant="link"
+                        className="mt-2"
+                        onClick={() => window.open(a.link)}
+                      >
+                        Open →
+                      </Button>
+
+                    </CardContent>
+                  </Card>
                 </motion.div>
               ))}
             </div>
 
-          </div> {/* MAIN */}
-        </div> {/* FLEX */}
-      </div> {/* CONTENT */}
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
