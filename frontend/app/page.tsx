@@ -26,11 +26,11 @@ interface Article {
 const TOPICS = ["Wallet", "Regulation", "Verification", "Public Sector", "Other"]
 
 const TOPIC_STYLES: Record<string, string> = {
-  Wallet: "bg-[#4C7DFF]/10 text-[#7FA0FF] ring-[#4C7DFF]/25",
-  Regulation: "bg-[#B57FFF]/10 text-[#C9A4FF] ring-[#B57FFF]/25",
-  Verification: "bg-[#3ECFB2]/10 text-[#6FE0C9] ring-[#3ECFB2]/25",
-  "Public Sector": "bg-[#E3B34B]/10 text-[#EAC377] ring-[#E3B34B]/25",
-  Other: "bg-white/5 text-[#8A93A6] ring-white/10",
+  Wallet: "bg-[#4C7DFF]/15 text-[#9DB6FF] ring-[#4C7DFF]/30",
+  Regulation: "bg-[#B57FFF]/15 text-[#D0B2FF] ring-[#B57FFF]/30",
+  Verification: "bg-[#3ECFB2]/15 text-[#8CE8D5] ring-[#3ECFB2]/30",
+  "Public Sector": "bg-[#E3B34B]/15 text-[#EFCE8B] ring-[#E3B34B]/30",
+  Other: "bg-white/[0.06] text-[#98A2B8] ring-white/10",
 }
 
 /** Number of bars in the signal glyph — scores are scaled onto these. */
@@ -100,12 +100,65 @@ function volumeByDay(articles: Article[], days = 14): number[] {
 }
 
 /* ------------------------------------------------------------------ */
+/*  Ambient background & global styles                                 */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Three softly blurred color fields drift very slowly behind the glass
+ * surfaces. Animations are transform-only (GPU friendly) and disabled
+ * entirely when the user prefers reduced motion.
+ */
+function AmbientBackground() {
+  return (
+    <>
+      <style>{`
+        @keyframes ne-drift-a {
+          0%   { transform: translate(0%, 0%) scale(1); }
+          33%  { transform: translate(14%, 10%) scale(1.15); }
+          66%  { transform: translate(-8%, 16%) scale(0.95); }
+          100% { transform: translate(0%, 0%) scale(1); }
+        }
+        @keyframes ne-drift-b {
+          0%   { transform: translate(0%, 0%) scale(1); }
+          50%  { transform: translate(-16%, -10%) scale(1.2); }
+          100% { transform: translate(0%, 0%) scale(1); }
+        }
+        @keyframes ne-drift-c {
+          0%   { transform: translate(0%, 0%) scale(1); }
+          50%  { transform: translate(10%, -14%) scale(0.9); }
+          100% { transform: translate(0%, 0%) scale(1); }
+        }
+        .ne-orb { will-change: transform; }
+        @media (prefers-reduced-motion: no-preference) {
+          .ne-orb-a { animation: ne-drift-a 70s ease-in-out infinite; }
+          .ne-orb-b { animation: ne-drift-b 90s ease-in-out infinite; }
+          .ne-orb-c { animation: ne-drift-c 80s ease-in-out infinite; }
+        }
+      `}</style>
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0 overflow-hidden"
+      >
+        <div className="ne-orb ne-orb-a absolute -left-[15%] -top-[20%] h-[60vmax] w-[60vmax] rounded-full bg-[#4C7DFF] opacity-[0.16] blur-[110px]" />
+        <div className="ne-orb ne-orb-b absolute -right-[20%] top-[15%] h-[55vmax] w-[55vmax] rounded-full bg-[#8B5CF6] opacity-[0.13] blur-[120px]" />
+        <div className="ne-orb ne-orb-c absolute -bottom-[25%] left-[20%] h-[50vmax] w-[50vmax] rounded-full bg-[#2DD4BF] opacity-[0.10] blur-[120px]" />
+        {/* Vignette keeps edges calm so glass panels stay readable */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_35%,#070A12_100%)]" />
+      </div>
+    </>
+  )
+}
+
+/** Shared glass surface recipe. */
+const glass =
+  "border border-white/[0.08] bg-white/[0.05] backdrop-blur-2xl " +
+  "shadow-[0_8px_32px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.08)]"
+
+/* ------------------------------------------------------------------ */
 /*  Small building blocks                                              */
 /* ------------------------------------------------------------------ */
 
 function SignalBars({ score, max }: { score: number; max: number }) {
-  // Scale the score onto the bar count so the glyph stays honest
-  // whether scores run 0–4 today or 0–10 in the future.
   const safeMax = Math.max(1, max)
   const level = Math.max(
     score > 0 ? 1 : 0,
@@ -122,8 +175,10 @@ function SignalBars({ score, max }: { score: number; max: number }) {
         <span
           key={i}
           style={{ height: 5 + i * 3 }}
-          className={`w-[3px] rounded-full ${
-            i < level ? "bg-[#4C7DFF]" : "bg-white/10"
+          className={`w-[3px] rounded-full transition-colors ${
+            i < level
+              ? "bg-[#7FA0FF] shadow-[0_0_6px_rgba(76,125,255,0.6)]"
+              : "bg-white/10"
           }`}
         />
       ))}
@@ -134,7 +189,7 @@ function SignalBars({ score, max }: { score: number; max: number }) {
 function TopicTag({ topic }: { topic: string }) {
   return (
     <span
-      className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium ring-1 ring-inset ${
+      className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium ring-1 ring-inset backdrop-blur-sm ${
         TOPIC_STYLES[topic] ?? TOPIC_STYLES.Other
       }`}
     >
@@ -152,7 +207,9 @@ function VolumeStrip({ data }: { data: number[] }) {
           key={i}
           style={{ height: `${Math.max(8, (v / max) * 100)}%` }}
           className={`w-1.5 rounded-sm ${
-            i === data.length - 1 ? "bg-[#4C7DFF]" : "bg-[#4C7DFF]/30"
+            i === data.length - 1
+              ? "bg-[#7FA0FF] shadow-[0_0_8px_rgba(76,125,255,0.5)]"
+              : "bg-[#4C7DFF]/30"
           }`}
           title={`${v} articles`}
         />
@@ -164,7 +221,7 @@ function VolumeStrip({ data }: { data: number[] }) {
 function Stat({ label, value }: { label: string; value: string | number }) {
   return (
     <div>
-      <p className="font-mono text-2xl font-medium tabular-nums text-[#E9EDF5]">
+      <p className="font-mono text-2xl font-medium tabular-nums text-[#F2F5FA]">
         {value}
       </p>
       <p className="mt-0.5 text-[11px] uppercase tracking-[0.14em] text-[#8A93A6]">
@@ -176,10 +233,34 @@ function Stat({ label, value }: { label: string; value: string | number }) {
 
 function SkeletonRow() {
   return (
-    <div className="animate-pulse border-b border-[#1D2536] py-5">
-      <div className="h-4 w-3/4 rounded bg-white/5" />
-      <div className="mt-3 h-3 w-1/3 rounded bg-white/5" />
+    <div className="animate-pulse border-b border-white/[0.05] px-6 py-5 last:border-0">
+      <div className="h-4 w-3/4 rounded bg-white/[0.06]" />
+      <div className="mt-3 h-3 w-1/3 rounded bg-white/[0.06]" />
     </div>
+  )
+}
+
+function FilterChip({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean
+  onClick: () => void
+  children: React.ReactNode
+}) {
+  return (
+    <button
+      onClick={onClick}
+      aria-pressed={active}
+      className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4C7DFF] ${
+        active
+          ? "bg-gradient-to-b from-[#5D8AFF] to-[#4C7DFF] text-white shadow-[0_2px_12px_rgba(76,125,255,0.45),inset_0_1px_0_rgba(255,255,255,0.25)]"
+          : "border border-white/[0.08] bg-white/[0.04] text-[#98A2B8] backdrop-blur-sm hover:bg-white/[0.08] hover:text-[#E9EDF5]"
+      }`}
+    >
+      {children}
+    </button>
   )
 }
 
@@ -274,20 +355,22 @@ export default function Home() {
     reduceMotion
       ? {}
       : {
-          initial: { opacity: 0, y: 10 },
+          initial: { opacity: 0, y: 12 },
           animate: { opacity: 1, y: 0 },
-          transition: { duration: 0.35, delay: i * 0.05 },
+          transition: { duration: 0.45, delay: i * 0.06, ease: "easeOut" },
         }
 
   /* ---- Render ----------------------------------------------------- */
 
   return (
-    <div className="min-h-screen bg-[#0A0E17] text-[#E9EDF5] antialiased selection:bg-[#4C7DFF]/30">
+    <div className="min-h-screen bg-[#070A12] text-[#E9EDF5] antialiased selection:bg-[#4C7DFF]/30">
+      <AmbientBackground />
+
       {/* Top bar */}
-      <header className="sticky top-0 z-20 border-b border-[#1D2536] bg-[#0A0E17]/80 backdrop-blur-md">
+      <header className="sticky top-0 z-20 border-b border-white/[0.06] bg-[#070A12]/55 backdrop-blur-2xl">
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-5">
           <div className="flex items-center gap-2.5">
-            <span className="grid h-6 w-6 place-items-center rounded-md bg-[#4C7DFF]">
+            <span className="grid h-6 w-6 place-items-center rounded-md bg-gradient-to-b from-[#5D8AFF] to-[#4C7DFF] shadow-[0_2px_10px_rgba(76,125,255,0.5)]">
               <SignalGlyph />
             </span>
             <span className="text-sm font-semibold tracking-tight">
@@ -307,22 +390,22 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-5 pb-24">
+      <main className="relative mx-auto max-w-6xl px-5 pb-24">
         {/* Hero */}
         <motion.section
           {...fadeUp()}
-          className="flex flex-col gap-8 border-b border-[#1D2536] py-12 md:flex-row md:items-end md:justify-between"
+          className="flex flex-col gap-8 py-14 md:flex-row md:items-end md:justify-between"
         >
           <div className="max-w-xl">
-            <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-[#4C7DFF]">
+            <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-[#9DB6FF]">
               EUDI · eIDAS · Trust infrastructure
             </p>
-            <h1 className="mt-3 text-4xl font-semibold leading-[1.08] tracking-tight md:text-5xl">
+            <h1 className="mt-3 bg-gradient-to-b from-white to-[#B9C3D6] bg-clip-text text-4xl font-semibold leading-[1.08] tracking-tight text-transparent md:text-5xl">
               Every identity signal,
               <br />
-              <span className="text-[#8A93A6]">one monitor.</span>
+              one monitor.
             </h1>
-            <p className="mt-4 text-sm leading-relaxed text-[#8A93A6]">
+            <p className="mt-4 text-sm leading-relaxed text-[#98A2B8]">
               Continuously scanning German and European sources for digital
               identity, wallet and regulation coverage — scored for relevance
               so the strongest signals surface first.
@@ -330,7 +413,9 @@ export default function Home() {
           </div>
 
           {stats && (
-            <div className="flex items-end gap-10">
+            <div
+              className={`flex items-end gap-10 rounded-2xl px-6 py-5 ${glass}`}
+            >
               <Stat label="Articles" value={stats.total} />
               <Stat label="Last 24 h" value={stats.last24h} />
               <Stat label="Sources" value={stats.sources} />
@@ -346,15 +431,15 @@ export default function Home() {
 
         {/* Error / loading */}
         {error && (
-          <div className="mt-16 rounded-xl border border-[#1D2536] bg-[#111726] p-10 text-center">
+          <div className={`mt-4 rounded-2xl p-10 text-center ${glass}`}>
             <p className="text-sm font-medium">The feed didn’t load.</p>
-            <p className="mt-1 text-sm text-[#8A93A6]">
+            <p className="mt-1 text-sm text-[#98A2B8]">
               The backend may be waking up from sleep — this can take up to a
               minute.
             </p>
             <button
               onClick={load}
-              className="mt-5 rounded-lg bg-[#4C7DFF] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#3B6CF0] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4C7DFF]"
+              className="mt-5 rounded-xl bg-gradient-to-b from-[#5D8AFF] to-[#4C7DFF] px-4 py-2 text-sm font-medium text-white shadow-[0_2px_16px_rgba(76,125,255,0.5),inset_0_1px_0_rgba(255,255,255,0.25)] transition hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4C7DFF]"
             >
               Retry
             </button>
@@ -362,7 +447,7 @@ export default function Home() {
         )}
 
         {!articles && !error && (
-          <div className="mt-10">
+          <div className={`mt-4 rounded-2xl ${glass}`}>
             {Array.from({ length: 6 }).map((_, i) => (
               <SkeletonRow key={i} />
             ))}
@@ -373,7 +458,7 @@ export default function Home() {
           <>
             {/* Key signals */}
             {topSignals.length > 0 && (
-              <section className="mt-12">
+              <section className="mt-2">
                 <h2 className="font-mono text-[11px] uppercase tracking-[0.22em] text-[#8A93A6]">
                   Key signals
                 </h2>
@@ -385,14 +470,14 @@ export default function Home() {
                       href={a.link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="group relative flex flex-col rounded-xl border border-[#1D2536] bg-[#111726] p-5 transition hover:border-[#4C7DFF]/40 hover:bg-[#131B2C] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4C7DFF]"
+                      className={`group relative flex flex-col rounded-2xl p-5 transition-all duration-300 hover:-translate-y-1 hover:bg-white/[0.08] hover:shadow-[0_16px_48px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.12)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4C7DFF] ${glass}`}
                     >
-                      <span className="pointer-events-none absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-[#E3B34B]/60 to-transparent" />
+                      <span className="pointer-events-none absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-[#E3B34B]/70 to-transparent" />
                       <div className="flex items-center justify-between">
                         <TopicTag topic={a.topic} />
                         <SignalBars score={a.score} max={maxScore} />
                       </div>
-                      <h3 className="mt-4 line-clamp-3 text-[15px] font-medium leading-snug text-[#E9EDF5] group-hover:text-white">
+                      <h3 className="mt-4 line-clamp-3 text-[15px] font-medium leading-snug text-[#F2F5FA] group-hover:text-white">
                         {a.title}
                       </h3>
                       <p className="mt-auto pt-4 font-mono text-[11px] text-[#8A93A6]">
@@ -404,9 +489,11 @@ export default function Home() {
               </section>
             )}
 
-            {/* Controls */}
-            <section className="sticky top-14 z-10 -mx-5 mt-12 border-y border-[#1D2536] bg-[#0A0E17]/90 px-5 py-3 backdrop-blur-md">
-              <div className="flex flex-wrap items-center gap-3">
+            {/* Controls — floating glass bar */}
+            <section className="sticky top-[68px] z-10 mt-10">
+              <div
+                className={`flex flex-wrap items-center gap-3 rounded-2xl px-4 py-3 ${glass}`}
+              >
                 <div className="relative min-w-[200px] flex-1">
                   <SearchGlyph />
                   <input
@@ -414,7 +501,7 @@ export default function Home() {
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder="Search titles, sources, keywords…"
                     aria-label="Search articles"
-                    className="w-full rounded-lg border border-[#1D2536] bg-[#111726] py-2 pl-9 pr-3 text-sm text-[#E9EDF5] placeholder:text-[#8A93A6]/70 focus:border-[#4C7DFF]/60 focus:outline-none"
+                    className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] py-2 pl-9 pr-3 text-sm text-[#E9EDF5] backdrop-blur-sm transition placeholder:text-[#8A93A6]/70 focus:border-[#4C7DFF]/60 focus:bg-white/[0.06] focus:outline-none"
                   />
                 </div>
 
@@ -458,38 +545,43 @@ export default function Home() {
                 </div>
 
                 <button
-                  onClick={() => setSort(sort === "newest" ? "score" : "newest")}
-                  className="ml-auto rounded-lg border border-[#1D2536] bg-[#111726] px-3 py-2 font-mono text-[11px] uppercase tracking-[0.1em] text-[#8A93A6] transition hover:text-[#E9EDF5] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4C7DFF]"
+                  onClick={() =>
+                    setSort(sort === "newest" ? "score" : "newest")
+                  }
+                  className="ml-auto rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 font-mono text-[11px] uppercase tracking-[0.1em] text-[#98A2B8] backdrop-blur-sm transition hover:bg-white/[0.08] hover:text-[#E9EDF5] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4C7DFF]"
                 >
                   Sort: {sort === "newest" ? "Newest" : "Signal"}
                 </button>
               </div>
             </section>
 
-            {/* Feed */}
-            <section aria-label="Article feed">
+            {/* Feed — one large glass panel */}
+            <section aria-label="Article feed" className="mt-6">
               {filtered.length === 0 ? (
-                <div className="py-20 text-center">
+                <div className={`rounded-2xl py-20 text-center ${glass}`}>
                   <p className="text-sm font-medium">No matching articles.</p>
-                  <p className="mt-1 text-sm text-[#8A93A6]">
+                  <p className="mt-1 text-sm text-[#98A2B8]">
                     Clear the search or lower the signal filter to see more.
                   </p>
                 </div>
               ) : (
-                <ul>
+                <ul className={`overflow-hidden rounded-2xl ${glass}`}>
                   {filtered.map((a) => (
-                    <li key={a.id}>
+                    <li
+                      key={a.id}
+                      className="border-b border-white/[0.05] last:border-0"
+                    >
                       <a
                         href={a.link}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="group flex items-start gap-4 border-b border-[#1D2536] py-5 transition hover:bg-white/[0.02] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4C7DFF] sm:items-center"
+                        className="group flex items-start gap-4 px-6 py-5 transition-colors duration-200 hover:bg-white/[0.05] focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#4C7DFF] sm:items-center"
                       >
                         <div className="w-10 shrink-0 pt-1 sm:pt-0">
                           <SignalBars score={a.score} max={maxScore} />
                         </div>
                         <div className="min-w-0 flex-1">
-                          <h3 className="truncate-none text-[15px] font-medium leading-snug text-[#E9EDF5] group-hover:text-white sm:truncate">
+                          <h3 className="text-[15px] font-medium leading-snug text-[#E9EDF5] group-hover:text-white sm:truncate">
                             {a.title}
                           </h3>
                           <p className="mt-1 font-mono text-[11px] text-[#8A93A6]">
@@ -519,30 +611,6 @@ export default function Home() {
 /* ------------------------------------------------------------------ */
 /*  Inline glyphs (no icon dependency)                                 */
 /* ------------------------------------------------------------------ */
-
-function FilterChip({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean
-  onClick: () => void
-  children: React.ReactNode
-}) {
-  return (
-    <button
-      onClick={onClick}
-      aria-pressed={active}
-      className={`rounded-full px-3 py-1.5 text-xs font-medium transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4C7DFF] ${
-        active
-          ? "bg-[#4C7DFF] text-white"
-          : "border border-[#1D2536] bg-[#111726] text-[#8A93A6] hover:text-[#E9EDF5]"
-      }`}
-    >
-      {children}
-    </button>
-  )
-}
 
 function SignalGlyph() {
   return (
@@ -575,7 +643,7 @@ function SearchGlyph() {
 function ArrowGlyph() {
   return (
     <svg
-      className="mt-1 shrink-0 text-[#8A93A6] transition group-hover:translate-x-0.5 group-hover:text-[#4C7DFF] sm:mt-0"
+      className="mt-1 shrink-0 text-[#8A93A6] transition group-hover:translate-x-0.5 group-hover:text-[#7FA0FF] sm:mt-0"
       width="14"
       height="14"
       viewBox="0 0 24 24"
