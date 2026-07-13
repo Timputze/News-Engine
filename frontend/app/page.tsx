@@ -75,7 +75,7 @@ export default function Home() {
   return (
     <div className="min-h-screen relative overflow-hidden">
 
-      {/* ✅ BACKGROUND */}
+      {/* BACKGROUND */}
       <motion.div
         className="absolute inset-0"
         animate={{
@@ -88,7 +88,7 @@ export default function Home() {
         transition={{ duration: 12, repeat: Infinity }}
       />
 
-      {/* ✅ CURSOR GLOW */}
+      {/* CURSOR GLOW */}
       <motion.div
         className="pointer-events-none fixed w-[400px] h-[400px] bg-blue-400 opacity-20 blur-[120px] rounded-full"
         style={{
@@ -102,7 +102,7 @@ export default function Home() {
       <div className="relative z-10">
 
         {/* NAV */}
-        <div className="h-16 flex items-center px-10 border-b bg-white/40 backdrop-blur-xl">
+        <div className="h-16 flex items-center px-10 border-b bg-white/50 backdrop-blur-xl">
           <h1 className="font-semibold text-lg">
             Digital Identity News Engine
           </h1>
@@ -110,25 +110,26 @@ export default function Home() {
 
         <div className="flex">
 
-          {/* ✅ SIDEBAR */}
-          <div className="w-72 p-6 bg-white/40 backdrop-blur-xl border-r space-y-6">
+          {/* SIDEBAR */}
+          <div className="w-72 p-6 bg-white/50 backdrop-blur-xl border-r space-y-8">
 
             <div>
-              <p className="text-sm font-medium mb-1">Search</p>
+              <p className="text-sm font-semibold">Search</p>
               <input
                 placeholder="Search articles..."
-                className="w-full px-3 py-2 rounded border bg-white"
+                className="w-full mt-2 px-3 py-2 rounded border bg-white"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
 
             <div>
-              <p className="text-sm font-medium mb-1">
+              <p className="text-sm font-semibold">
                 Relevance Filter
               </p>
 
               <input
+                className="mt-2"
                 type="range"
                 min={0}
                 max={maxScore}
@@ -137,33 +138,33 @@ export default function Home() {
               />
 
               <p className="text-xs text-gray-600 mt-1">
-                Only show articles with score ≥ {minScore}
+                Showing articles with score ≥ {minScore}
               </p>
             </div>
 
           </div>
 
           {/* MAIN */}
-          <div className="flex-1 p-12 space-y-12">
+          <div className="flex-1 p-12 space-y-14">
 
             {/* HERO */}
             <div>
               <h1 className="text-5xl font-bold tracking-tight">
                 Digital Identity
               </h1>
-              <h2 className="text-5xl text-blue-600 font-bold">
+              <h2 className="text-5xl font-bold text-blue-600">
                 News Dashboard
               </h2>
             </div>
 
             {/* KPI */}
             <div className="grid grid-cols-3 gap-6">
-              {[
+              {[ 
                 { label: "Articles", value: filtered.length },
                 { label: "Avg Score", value: avgScore },
                 { label: "Topics", value: Object.keys(topicCounts).length }
               ].map((kpi, i) => (
-                <Card key={i}>
+                <Card key={i} className="shadow-sm">
                   <CardContent>
                     <CardDescription>{kpi.label}</CardDescription>
                     <CardTitle className="mt-2 text-xl text-blue-600">
@@ -174,17 +175,20 @@ export default function Home() {
               ))}
             </div>
 
-            {/* TOP ARTICLES */}
+            {/* TOP ARTICLES (FEATURED) */}
             <div>
               <h2 className="text-lg font-semibold mb-4">
-                Top Articles
+                Top Insights
               </h2>
 
               <div className="grid grid-cols-3 gap-6">
                 {top3.map((a, i) => (
-                  <Card key={i}>
+                  <Card key={i} className="shadow-xl border-2 border-blue-200">
                     <CardContent>
-                      <CardTitle>{a.title}</CardTitle>
+
+                      <CardTitle className="text-base">
+                        {a.title}
+                      </CardTitle>
 
                       <CardDescription className="mt-2">
                         {a.source}
@@ -201,6 +205,7 @@ export default function Home() {
                       >
                         Open →
                       </Button>
+
                     </CardContent>
                   </Card>
                 ))}
@@ -208,7 +213,7 @@ export default function Home() {
             </div>
 
             {/* CHART */}
-            <Card>
+            <Card className="shadow-sm">
               <CardContent>
                 <div className="h-40">
                   <ResponsiveContainer width="100%" height="100%">
@@ -225,15 +230,13 @@ export default function Home() {
             {/* ALL ARTICLES */}
             <div className="grid grid-cols-3 gap-6">
               {filtered.map((a, i) => (
-                <motion.div
-                  key={i}
-                  style={{ rotateX, rotateY }}
-                  whileHover={{ scale: 1.03 }}
-                >
-                  <Card>
+                <motion.div key={i} style={{ rotateX, rotateY }}>
+                  <Card className="shadow-sm hover:shadow-md transition">
                     <CardContent>
 
-                      <CardTitle>{a.title}</CardTitle>
+                      <CardTitle className="text-sm">
+                        {a.title}
+                      </CardTitle>
 
                       <CardDescription className="mt-2">
                         {a.source}
