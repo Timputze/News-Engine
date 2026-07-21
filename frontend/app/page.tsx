@@ -25,12 +25,16 @@ interface Article {
 
 const TOPICS = ["Wallet", "Regulation", "Verification", "Public Sector", "Other"]
 
+/*  Palette (from the reference):
+    mint   #55D396   green  #169A50   surface #272C2A
+    black  #040605   white  #FFFFFF                       */
+
 const TOPIC_STYLES: Record<string, string> = {
-  Wallet: "bg-[#4C7DFF]/15 text-[#9DB6FF] ring-[#4C7DFF]/30",
-  Regulation: "bg-[#B57FFF]/15 text-[#D0B2FF] ring-[#B57FFF]/30",
-  Verification: "bg-[#3ECFB2]/15 text-[#8CE8D5] ring-[#3ECFB2]/30",
-  "Public Sector": "bg-[#E3B34B]/15 text-[#EFCE8B] ring-[#E3B34B]/30",
-  Other: "bg-white/[0.06] text-[#98A2B8] ring-white/10",
+  Wallet: "bg-[#55D396]/15 text-[#8FE7BD] ring-[#55D396]/30",
+  Regulation: "bg-white/[0.07] text-[#E6EAE7] ring-white/15",
+  Verification: "bg-[#169A50]/20 text-[#5FCE93] ring-[#169A50]/40",
+  "Public Sector": "bg-[#B8D8C4]/10 text-[#B8D8C4] ring-[#B8D8C4]/25",
+  Other: "bg-white/[0.05] text-[#93A09A] ring-white/10",
 }
 
 /** Number of bars in the signal glyph — scores are scaled onto these. */
@@ -104,55 +108,52 @@ function volumeByDay(articles: Article[], days = 14): number[] {
 /* ------------------------------------------------------------------ */
 
 /**
- * Three softly blurred color fields drift very slowly behind the glass
- * surfaces. Animations are transform-only (GPU friendly) and disabled
- * entirely when the user prefers reduced motion.
+ * Loads General Sans (via Fontshare) and renders the black→green aurora:
+ * a strong glow rising from the bottom plus two slowly drifting green
+ * fields. Transform-only animations, disabled for reduced motion.
  */
 function AmbientBackground() {
   return (
     <>
       <style>{`
+        @import url('https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600&display=swap');
+
         @keyframes ne-drift-a {
           0%   { transform: translate(0%, 0%) scale(1); }
-          33%  { transform: translate(14%, 10%) scale(1.15); }
-          66%  { transform: translate(-8%, 16%) scale(0.95); }
+          50%  { transform: translate(12%, -8%) scale(1.15); }
           100% { transform: translate(0%, 0%) scale(1); }
         }
         @keyframes ne-drift-b {
           0%   { transform: translate(0%, 0%) scale(1); }
-          50%  { transform: translate(-16%, -10%) scale(1.2); }
-          100% { transform: translate(0%, 0%) scale(1); }
-        }
-        @keyframes ne-drift-c {
-          0%   { transform: translate(0%, 0%) scale(1); }
-          50%  { transform: translate(10%, -14%) scale(0.9); }
+          50%  { transform: translate(-10%, -12%) scale(1.1); }
           100% { transform: translate(0%, 0%) scale(1); }
         }
         .ne-orb { will-change: transform; }
         @media (prefers-reduced-motion: no-preference) {
-          .ne-orb-a { animation: ne-drift-a 70s ease-in-out infinite; }
-          .ne-orb-b { animation: ne-drift-b 90s ease-in-out infinite; }
-          .ne-orb-c { animation: ne-drift-c 80s ease-in-out infinite; }
+          .ne-orb-a { animation: ne-drift-a 75s ease-in-out infinite; }
+          .ne-orb-b { animation: ne-drift-b 95s ease-in-out infinite; }
         }
       `}</style>
       <div
         aria-hidden="true"
         className="pointer-events-none fixed inset-0 overflow-hidden"
       >
-        <div className="ne-orb ne-orb-a absolute -left-[15%] -top-[20%] h-[60vmax] w-[60vmax] rounded-full bg-[#4C7DFF] opacity-[0.16] blur-[110px]" />
-        <div className="ne-orb ne-orb-b absolute -right-[20%] top-[15%] h-[55vmax] w-[55vmax] rounded-full bg-[#8B5CF6] opacity-[0.13] blur-[120px]" />
-        <div className="ne-orb ne-orb-c absolute -bottom-[25%] left-[20%] h-[50vmax] w-[50vmax] rounded-full bg-[#2DD4BF] opacity-[0.10] blur-[120px]" />
-        {/* Vignette keeps edges calm so glass panels stay readable */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_35%,#070A12_100%)]" />
+        {/* The rising green glow from the reference */}
+        <div className="absolute inset-x-0 bottom-0 h-[70%] bg-[radial-gradient(120%_90%_at_50%_110%,rgba(22,154,80,0.45)_0%,rgba(45,212,191,0.12)_45%,transparent_70%)]" />
+        {/* Drifting fields for gentle movement */}
+        <div className="ne-orb ne-orb-a absolute -bottom-[30%] -left-[15%] h-[55vmax] w-[55vmax] rounded-full bg-[#169A50] opacity-[0.18] blur-[120px]" />
+        <div className="ne-orb ne-orb-b absolute -bottom-[35%] right-[0%] h-[50vmax] w-[50vmax] rounded-full bg-[#2DD4BF] opacity-[0.10] blur-[130px]" />
+        {/* Vignette keeps the top calm and text readable */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,#040605_0%,transparent_50%)]" />
       </div>
     </>
   )
 }
 
-/** Shared glass surface recipe. */
+/** Shared glass surface recipe, tinted to the #272C2A surface tone. */
 const glass =
-  "border border-white/[0.08] bg-white/[0.05] backdrop-blur-2xl " +
-  "shadow-[0_8px_32px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.08)]"
+  "border border-white/[0.08] bg-[#272C2A]/40 backdrop-blur-2xl " +
+  "shadow-[0_8px_32px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.07)]"
 
 /* ------------------------------------------------------------------ */
 /*  Small building blocks                                              */
@@ -177,7 +178,7 @@ function SignalBars({ score, max }: { score: number; max: number }) {
           style={{ height: 5 + i * 3 }}
           className={`w-[3px] rounded-full transition-colors ${
             i < level
-              ? "bg-[#7FA0FF] shadow-[0_0_6px_rgba(76,125,255,0.6)]"
+              ? "bg-[#55D396] shadow-[0_0_6px_rgba(85,211,150,0.6)]"
               : "bg-white/10"
           }`}
         />
@@ -208,8 +209,8 @@ function VolumeStrip({ data }: { data: number[] }) {
           style={{ height: `${Math.max(8, (v / max) * 100)}%` }}
           className={`w-1.5 rounded-sm ${
             i === data.length - 1
-              ? "bg-[#7FA0FF] shadow-[0_0_8px_rgba(76,125,255,0.5)]"
-              : "bg-[#4C7DFF]/30"
+              ? "bg-[#55D396] shadow-[0_0_8px_rgba(85,211,150,0.5)]"
+              : "bg-[#169A50]/40"
           }`}
           title={`${v} articles`}
         />
@@ -221,10 +222,10 @@ function VolumeStrip({ data }: { data: number[] }) {
 function Stat({ label, value }: { label: string; value: string | number }) {
   return (
     <div>
-      <p className="font-mono text-2xl font-medium tabular-nums text-[#F2F5FA]">
+      <p className="font-mono text-2xl font-medium tabular-nums text-white">
         {value}
       </p>
-      <p className="mt-0.5 text-[11px] uppercase tracking-[0.14em] text-[#8A93A6]">
+      <p className="mt-0.5 text-[11px] uppercase tracking-[0.14em] text-[#93A09A]">
         {label}
       </p>
     </div>
@@ -253,10 +254,10 @@ function FilterChip({
     <button
       onClick={onClick}
       aria-pressed={active}
-      className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4C7DFF] ${
+      className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#55D396] ${
         active
-          ? "bg-gradient-to-b from-[#5D8AFF] to-[#4C7DFF] text-white shadow-[0_2px_12px_rgba(76,125,255,0.45),inset_0_1px_0_rgba(255,255,255,0.25)]"
-          : "border border-white/[0.08] bg-white/[0.04] text-[#98A2B8] backdrop-blur-sm hover:bg-white/[0.08] hover:text-[#E9EDF5]"
+          ? "bg-gradient-to-b from-[#63DCA1] to-[#3CBE7F] text-[#04160C] shadow-[0_2px_14px_rgba(85,211,150,0.45),inset_0_1px_0_rgba(255,255,255,0.35)]"
+          : "border border-white/[0.08] bg-white/[0.04] text-[#93A09A] backdrop-blur-sm hover:bg-white/[0.08] hover:text-[#E6EAE7]"
       }`}
     >
       {children}
@@ -357,33 +358,43 @@ export default function Home() {
       : {
           initial: { opacity: 0, y: 12 },
           animate: { opacity: 1, y: 0 },
-          transition: { duration: 0.45, delay: i * 0.06, ease: "easeOut" as const},
+          transition: {
+            duration: 0.45,
+            delay: i * 0.06,
+            ease: "easeOut" as const,
+          },
         }
 
   /* ---- Render ----------------------------------------------------- */
 
   return (
-    <div className="min-h-screen bg-[#070A12] text-[#E9EDF5] antialiased selection:bg-[#4C7DFF]/30">
+    <div
+      className="min-h-screen bg-[#040605] text-[#E6EAE7] antialiased selection:bg-[#55D396]/30"
+      style={{
+        fontFamily:
+          "'General Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif",
+      }}
+    >
       <AmbientBackground />
 
       {/* Top bar */}
-      <header className="sticky top-0 z-20 border-b border-white/[0.06] bg-[#070A12]/55 backdrop-blur-2xl">
+      <header className="sticky top-0 z-20 border-b border-white/[0.06] bg-[#040605]/55 backdrop-blur-2xl">
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-5">
           <div className="flex items-center gap-2.5">
-            <span className="grid h-6 w-6 place-items-center rounded-md bg-gradient-to-b from-[#5D8AFF] to-[#4C7DFF] shadow-[0_2px_10px_rgba(76,125,255,0.5)]">
+            <span className="grid h-6 w-6 place-items-center rounded-md bg-gradient-to-b from-[#63DCA1] to-[#3CBE7F] shadow-[0_2px_10px_rgba(85,211,150,0.5)]">
               <SignalGlyph />
             </span>
             <span className="text-sm font-semibold tracking-tight">
               News Engine
             </span>
-            <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#8A93A6]">
+            <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#93A09A]">
               Digital Identity
             </span>
           </div>
-          <span className="flex items-center gap-1.5 font-mono text-[11px] text-[#8A93A6]">
+          <span className="flex items-center gap-1.5 font-mono text-[11px] text-[#93A09A]">
             <span className="relative flex h-1.5 w-1.5">
-              <span className="absolute h-full w-full animate-ping rounded-full bg-[#3ECFB2]/60" />
-              <span className="relative h-1.5 w-1.5 rounded-full bg-[#3ECFB2]" />
+              <span className="absolute h-full w-full animate-ping rounded-full bg-[#55D396]/60" />
+              <span className="relative h-1.5 w-1.5 rounded-full bg-[#55D396]" />
             </span>
             Live feed
           </span>
@@ -397,15 +408,15 @@ export default function Home() {
           className="flex flex-col gap-8 py-14 md:flex-row md:items-end md:justify-between"
         >
           <div className="max-w-xl">
-            <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-[#9DB6FF]">
+            <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-[#8FE7BD]">
               EUDI · eIDAS · Trust infrastructure
             </p>
-            <h1 className="mt-3 bg-gradient-to-b from-white to-[#B9C3D6] bg-clip-text text-4xl font-semibold leading-[1.08] tracking-tight text-transparent md:text-5xl">
+            <h1 className="mt-3 bg-gradient-to-b from-white to-[#CDE9DA] bg-clip-text text-4xl font-medium leading-[1.08] tracking-tight text-transparent md:text-5xl">
               Every identity signal,
               <br />
               one monitor.
             </h1>
-            <p className="mt-4 text-sm leading-relaxed text-[#98A2B8]">
+            <p className="mt-4 text-sm leading-relaxed text-[#93A09A]">
               Continuously scanning German and European sources for digital
               identity, wallet and regulation coverage — scored for relevance
               so the strongest signals surface first.
@@ -421,7 +432,7 @@ export default function Home() {
               <Stat label="Sources" value={stats.sources} />
               <div className="hidden h-14 sm:block">
                 <VolumeStrip data={stats.volume} />
-                <p className="mt-1.5 text-[10px] uppercase tracking-[0.14em] text-[#8A93A6]">
+                <p className="mt-1.5 text-[10px] uppercase tracking-[0.14em] text-[#93A09A]">
                   14-day volume
                 </p>
               </div>
@@ -433,13 +444,13 @@ export default function Home() {
         {error && (
           <div className={`mt-4 rounded-2xl p-10 text-center ${glass}`}>
             <p className="text-sm font-medium">The feed didn’t load.</p>
-            <p className="mt-1 text-sm text-[#98A2B8]">
+            <p className="mt-1 text-sm text-[#93A09A]">
               The backend may be waking up from sleep — this can take up to a
               minute.
             </p>
             <button
               onClick={load}
-              className="mt-5 rounded-xl bg-gradient-to-b from-[#5D8AFF] to-[#4C7DFF] px-4 py-2 text-sm font-medium text-white shadow-[0_2px_16px_rgba(76,125,255,0.5),inset_0_1px_0_rgba(255,255,255,0.25)] transition hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4C7DFF]"
+              className="mt-5 rounded-xl bg-gradient-to-b from-[#63DCA1] to-[#3CBE7F] px-4 py-2 text-sm font-medium text-[#04160C] shadow-[0_2px_16px_rgba(85,211,150,0.5),inset_0_1px_0_rgba(255,255,255,0.35)] transition hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#55D396]"
             >
               Retry
             </button>
@@ -447,7 +458,7 @@ export default function Home() {
         )}
 
         {!articles && !error && (
-          <div className={`mt-4 rounded-2xl ${glass}`}>
+          <div className={`mt-4 overflow-hidden rounded-2xl ${glass}`}>
             {Array.from({ length: 6 }).map((_, i) => (
               <SkeletonRow key={i} />
             ))}
@@ -459,7 +470,7 @@ export default function Home() {
             {/* Key signals */}
             {topSignals.length > 0 && (
               <section className="mt-2">
-                <h2 className="font-mono text-[11px] uppercase tracking-[0.22em] text-[#8A93A6]">
+                <h2 className="font-mono text-[11px] uppercase tracking-[0.22em] text-[#93A09A]">
                   Key signals
                 </h2>
                 <div className="mt-4 grid gap-4 md:grid-cols-3">
@@ -470,17 +481,17 @@ export default function Home() {
                       href={a.link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={`group relative flex flex-col rounded-2xl p-5 transition-all duration-300 hover:-translate-y-1 hover:bg-white/[0.08] hover:shadow-[0_16px_48px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.12)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4C7DFF] ${glass}`}
+                      className={`group relative flex flex-col rounded-2xl p-5 transition-all duration-300 hover:-translate-y-1 hover:bg-[#272C2A]/60 hover:shadow-[0_16px_48px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.1)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#55D396] ${glass}`}
                     >
-                      <span className="pointer-events-none absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-[#E3B34B]/70 to-transparent" />
+                      <span className="pointer-events-none absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-[#55D396]/70 to-transparent" />
                       <div className="flex items-center justify-between">
                         <TopicTag topic={a.topic} />
                         <SignalBars score={a.score} max={maxScore} />
                       </div>
-                      <h3 className="mt-4 line-clamp-3 text-[15px] font-medium leading-snug text-[#F2F5FA] group-hover:text-white">
+                      <h3 className="mt-4 line-clamp-3 text-[15px] font-medium leading-snug text-white/90 group-hover:text-white">
                         {a.title}
                       </h3>
-                      <p className="mt-auto pt-4 font-mono text-[11px] text-[#8A93A6]">
+                      <p className="mt-auto pt-4 font-mono text-[11px] text-[#93A09A]">
                         {a.source} · {timeAgo(a.published_at)}
                       </p>
                     </motion.a>
@@ -501,7 +512,7 @@ export default function Home() {
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder="Search titles, sources, keywords…"
                     aria-label="Search articles"
-                    className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] py-2 pl-9 pr-3 text-sm text-[#E9EDF5] backdrop-blur-sm transition placeholder:text-[#8A93A6]/70 focus:border-[#4C7DFF]/60 focus:bg-white/[0.06] focus:outline-none"
+                    className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] py-2 pl-9 pr-3 text-sm text-[#E6EAE7] backdrop-blur-sm transition placeholder:text-[#93A09A]/70 focus:border-[#55D396]/60 focus:bg-white/[0.06] focus:outline-none"
                   />
                 </div>
 
@@ -524,7 +535,7 @@ export default function Home() {
                 </div>
 
                 <div className="flex items-center gap-1.5">
-                  <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-[#8A93A6]">
+                  <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-[#93A09A]">
                     Signal
                   </span>
                   <FilterChip
@@ -548,7 +559,7 @@ export default function Home() {
                   onClick={() =>
                     setSort(sort === "newest" ? "score" : "newest")
                   }
-                  className="ml-auto rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 font-mono text-[11px] uppercase tracking-[0.1em] text-[#98A2B8] backdrop-blur-sm transition hover:bg-white/[0.08] hover:text-[#E9EDF5] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4C7DFF]"
+                  className="ml-auto rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 font-mono text-[11px] uppercase tracking-[0.1em] text-[#93A09A] backdrop-blur-sm transition hover:bg-white/[0.08] hover:text-[#E6EAE7] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#55D396]"
                 >
                   Sort: {sort === "newest" ? "Newest" : "Signal"}
                 </button>
@@ -560,7 +571,7 @@ export default function Home() {
               {filtered.length === 0 ? (
                 <div className={`rounded-2xl py-20 text-center ${glass}`}>
                   <p className="text-sm font-medium">No matching articles.</p>
-                  <p className="mt-1 text-sm text-[#98A2B8]">
+                  <p className="mt-1 text-sm text-[#93A09A]">
                     Clear the search or lower the signal filter to see more.
                   </p>
                 </div>
@@ -575,16 +586,16 @@ export default function Home() {
                         href={a.link}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="group flex items-start gap-4 px-6 py-5 transition-colors duration-200 hover:bg-white/[0.05] focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#4C7DFF] sm:items-center"
+                        className="group flex items-start gap-4 px-6 py-5 transition-colors duration-200 hover:bg-white/[0.04] focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#55D396] sm:items-center"
                       >
                         <div className="w-10 shrink-0 pt-1 sm:pt-0">
                           <SignalBars score={a.score} max={maxScore} />
                         </div>
                         <div className="min-w-0 flex-1">
-                          <h3 className="text-[15px] font-medium leading-snug text-[#E9EDF5] group-hover:text-white sm:truncate">
+                          <h3 className="text-[15px] font-medium leading-snug text-[#E6EAE7] group-hover:text-white sm:truncate">
                             {a.title}
                           </h3>
-                          <p className="mt-1 font-mono text-[11px] text-[#8A93A6]">
+                          <p className="mt-1 font-mono text-[11px] text-[#93A09A]">
                             {a.source} · {timeAgo(a.published_at)}
                           </p>
                         </div>
@@ -597,7 +608,7 @@ export default function Home() {
                   ))}
                 </ul>
               )}
-              <p className="mt-6 font-mono text-[11px] text-[#8A93A6]">
+              <p className="mt-6 font-mono text-[11px] text-[#93A09A]">
                 {filtered.length} of {articles.length} articles
               </p>
             </section>
@@ -615,9 +626,9 @@ export default function Home() {
 function SignalGlyph() {
   return (
     <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden>
-      <rect x="1" y="7" width="2" height="4" rx="1" fill="white" />
-      <rect x="5" y="4" width="2" height="7" rx="1" fill="white" />
-      <rect x="9" y="1" width="2" height="10" rx="1" fill="white" />
+      <rect x="1" y="7" width="2" height="4" rx="1" fill="#04160C" />
+      <rect x="5" y="4" width="2" height="7" rx="1" fill="#04160C" />
+      <rect x="9" y="1" width="2" height="10" rx="1" fill="#04160C" />
     </svg>
   )
 }
@@ -625,7 +636,7 @@ function SignalGlyph() {
 function SearchGlyph() {
   return (
     <svg
-      className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#8A93A6]"
+      className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#93A09A]"
       width="14"
       height="14"
       viewBox="0 0 24 24"
@@ -643,7 +654,7 @@ function SearchGlyph() {
 function ArrowGlyph() {
   return (
     <svg
-      className="mt-1 shrink-0 text-[#8A93A6] transition group-hover:translate-x-0.5 group-hover:text-[#7FA0FF] sm:mt-0"
+      className="mt-1 shrink-0 text-[#93A09A] transition group-hover:translate-x-0.5 group-hover:text-[#55D396] sm:mt-0"
       width="14"
       height="14"
       viewBox="0 0 24 24"
